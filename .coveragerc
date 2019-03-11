@@ -1,0 +1,3 @@
+[run]
+source = saltstack_frontend
+omit = saltstack_frontend/test*
