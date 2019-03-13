@@ -1,0 +1,59 @@
+{% extends "layout.jinja2" %}
+{% block css %}
+    <link rel="stylesheet" href="{{request.static_url('saltstack_frontend:static/css/datatables.bootstrap4.css')}}">
+{% endblock css %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+  	<div class="card">
+        <div class="card-header">
+        Jobs cache (filtered by states.apply)
+        <div class="card-header-actions">
+          <a class="card-header-action" href="/jobs?refresh=True">
+            <small class="text-muted">refresh</small>
+          </a>
+        </div>
+      </div>
+      <div class="card-body">
+        <table class="table table-sm" id="table1">
+          <thead>
+            <th>Job Id</th>
+            <th>Target</th>
+            <th>Target Type</th>
+            <th>Argument</th>
+          </thead>
+          <tbody>
+            {% for jid, job_data in jobs.items() %}  
+            <tr>
+              {% if job_data.Target is string %}
+              <td>{{ jid }}</td><td>{{ job_data.Target }}</td><td>{{ job_data['Target-type'] }}</td><td>{{ job_data.Arguments }}</td>
+              {% else %}
+              <td>{{ jid }}</td><td>{{ job_data.Target|join(", ") }}</td><td>{{ job_data['Target-type'] }}</td><td>{{ job_data.Arguments }}</td>
+              {% endif %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+{% block js %}
+<!--
+<script src="{{request.static_url('saltstack_frontend:static/js/jquery.dataTables.js')}}"></script>
+<script src="{{request.static_url('saltstack_frontend:static/js/dataTables.bootstrap4.js')}}"></script>
+-->
+<script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script>
+  $(document).ready( function () {
+    var table1 = $('#table1').DataTable();
+    $('#table1').on('click', 'tr', function () {
+        var data = table1.row( this ).data();
+        document.location.href = '/jobs/' + data[0];
+      });
+  });
+</script>
+{% endblock js %}

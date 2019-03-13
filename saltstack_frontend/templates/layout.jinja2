@@ -6,16 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="pyramid web application">
     <meta name="author" content="Pylons Project">
-    <link rel="stylesheet" href="https://unpkg.com/@coreui/coreui/dist/css/coreui.min.css">
     <link rel="shortcut icon" href="{{request.static_url('saltstack_frontend:static/img/pyramid-16x16.png')}}">
 
-    <title>Cookiecutter Starter project for the Pyramid Web Framework</title>
+    <title>SaltStack Frontend</title>
 
     <!-- CoreUi core CSS -->
     <link rel="stylesheet" href="https://unpkg.com/@coreui/coreui/dist/css/coreui.min.css">
     <!-- CoreUi Icons -->
     <link rel="stylesheet" href="https://unpkg.com/@coreui/icons/css/coreui-icons.min.css">
-
+    {% block css %}
+    {% endblock css %}
     <!-- Custom styles for this scaffold -->
     <!-- <link href="{{request.static_url('saltstack_frontend:static/css/theme.css')}}" rel="stylesheet"> -->
 
@@ -26,33 +26,57 @@
     <![endif]-->
   </head>
 
-  <body>
-<body class="app header-fixed sidebar-show">
-  <header class="app-header navbar navbar-dark bg-dark">
-     <a class="navbar-brand">Navbar</a>
+<body class="app header-fixed sidebar-lg-show">
+  <header class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="{{ request.resource_url(request.root) }}">Salt Frontend</a>
   </header>
   <div class="app-body">
     <div class="sidebar">
       <nav class="sidebar-nav">
         <ul class="nav">
-          <li class="nav-title">Nav Title</li>
+          <li class="nav-title">Settings</li>
           <li class="nav-item">
-            <a class="nav-link" href="#">
-              <i class="nav-icon cui-speedometer"></i> Nav item
+            <a class="nav-link" href="/minions">
+              <i class="nav-icon cui-laptop"></i>Minions
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">
-              <i class="nav-icon cui-speedometer"></i> With badge
+            <a class="nav-link" href="/pillars">
+              <i class="nav-icon cui-laptop"></i>Pillars
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/states/show">
+              <i class="nav-icon cui-laptop"></i>States
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/jobs">
+              <i class="nav-icon cui-speedometer"></i>Jobs
               <span class="badge badge-primary">NEW</span>
             </a>
           </li>
+          <li class="nav-title">Utility</li>
+          <li class="nav-item">
+            <a class="nav-link" href="/states/apply">
+              <i class="nav-icon cui-laptop"></i>Apply States
+            </a>
+          </li>          
+
         </ul>
       </nav>
+      <button class="sidebar-minimizer brand-minimizer" type="button"></button>
     </div>
     <main class="main">
       <ol class="breadcrumb">
         <li class="breadcrumb-item">Home</li>
+        {% for path in request.path.split('/')[1:] %}
+        {% if loop.last %}
+        <li class="breadcrumb-item active" aria-current="page">{{ path }}</li>
+        {% else %}
+        <li class="breadcrumb-item"><a href="/{{ path }}">{{ path }}</a></li>
+        {% endif %}
+        {% endfor %}
       </ol>
     <div class="container-fluid">
       {% block content %}
@@ -72,5 +96,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha256-xaF9RpdtRxzwYMWg4ldJoyPWqyDPCRD0Cv7YEEe6Ie8=" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@coreui/coreui/dist/js/coreui.min.js"></script>
+  {% block js %}
+  {% endblock js %}
   </body>
 </html>
