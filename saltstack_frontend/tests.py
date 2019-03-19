@@ -10,10 +10,10 @@ class ViewTests(unittest.TestCase):
     def tearDown(self):
         testing.tearDown()
 
-    def test_my_view(self):
-        from .views.default import my_view
+    def test_view_index(self):
+        from .views.default import view_index
         request = testing.DummyRequest()
-        info = my_view(request)
+        info = view_index(request)
         self.assertEqual(info['project'], 'Saltstack Frontend')
 
 
@@ -26,4 +26,4 @@ class FunctionalTests(unittest.TestCase):
 
     def test_root(self):
         res = self.testapp.get('/', status=200)
-        self.assertTrue(b'Pyramid' in res.body)
+        self.assertTrue(b'navbar' in res.body)

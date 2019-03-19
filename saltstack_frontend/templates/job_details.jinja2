@@ -1,0 +1,60 @@
+{% extends "layout.jinja2" %}
+
+{% block content %}
+<div class="row">
+  <div class="col-3">
+  	<div class="card">
+      <div class="card-header">
+      Minions (total: {{ minions_total }})
+      {%- if minions_failed %}
+      <span class="badge badge-danger float-right">Failed: {{ minions_failed }}</span>
+      {% endif %}
+      </div>
+    <!-- <div class="card-body"> -->
+      <div class="list-group">
+      {% for minion in minions_job_result.keys() %}
+        {% set status_class = "list-group-item-danger" if minions_job_result[minion]['failed'] else "" %}
+        <a class="list-group-item list-group-item-action {{ status_class }}" href="{{ request.path }}?minion={{ minion }}">
+        <span class="badge badge-secondary badge-pill">{{ minions_job_result[minion]['num_steps']}}</span>&nbsp{{ minion }}</a>
+      {% endfor %}
+      </div>
+    <!-- </div> -->
+    </div>
+  </div>
+  <div class="col-9">
+  	<div class="card">
+      {% if minion_id %}
+      <div class="card-header" id="minion-details"><i class="cui-justify-center"></i>{{ minion_id }}</div>
+      <ul class="list-group">
+        {%- for step in minions_job_result[minion_id]['result']['return'] %}
+        {%- if minions_job_result[minion_id]['num_steps'] > 0 %}
+        <li class="list-group-item list-group-item-action">
+          <div class="d-flex w-100 job-title" id="job-title-{{ loop.index }}">
+            <h6>{{ minions_job_result[minion_id]['result']['return'][step]['__id__'] }}
+            {{ minions_job_result[minion_id]['result']['return'][step]['__run_num__']}}</h6>
+          </div>
+          <p class="mb-1 job-step">
+            {{ minions_job_result[minion_id]['result']['return'][step]['changes'] }}
+          </p>
+        </li>
+        {% else %}
+          <li class="list-group-item list-group-item-action">{{ step|e }}</li>
+        {% endif %}
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="card-header" id="minion-details"><i class="cui-justify-center"></i>Jobs steps</div>
+      <div class="card-body">Click on a minion name to see jobs output windows</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock content %}
+{% block js %}
+<script>
+$(".job-step").hide();
+$(".job-title").click(function(){
+  $(this).next().toggle();
+});
+</script>
+{% endblock js %}

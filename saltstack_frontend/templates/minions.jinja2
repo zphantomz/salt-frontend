@@ -1,0 +1,56 @@
+{% extends "layout.jinja2" %}
+
+{% block content %}
+<div class="row">
+  {% for i in range(4) %}
+  <div class="col">
+  	<div class="card">
+        <div class="card-header">
+        Featured
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">Special title treatment</h5>
+        <p class="card-text">It's a broader card with text below as a natural lead-in to extra content. This content is a little longer.</p>
+        <a href="#" class="btn btn-primary">Go somewhere</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<div class="row">
+  <div class="col-12">
+  	<div class="card">
+        <div class="card-header">
+        Featured
+      </div>
+      <div class="card-body">
+        <table class="table table-sm" id="table1">
+          <thead>
+            <th>Data</th>
+            <th>Minions</th>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Uno</td><td>Due</td>
+            </tr>
+            <tr>
+              <td>tre</td><td>tre</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+{% block js %}
+<script src="{{request.static_url('saltstack_frontend:static/js/jquery.dataTables.js')}}"></script>
+<script src="{{request.static_url('saltstack_frontend:static/js/dataTables.bootstrap4.js')}}"></script>
+<script>
+  $(document).ready( function () {
+    $('#table1').DataTable( {
+      ordering: true
+    });
+} );
+</script>
+{% endblock js %}

@@ -2,6 +2,7 @@ from pyramid.config import Configurator
 
 __version__ = "0.1"
 
+
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """

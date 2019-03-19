@@ -24,13 +24,16 @@
             <th>Argument</th>
           </thead>
           <tbody>
-            {% for jid, job_data in jobs.items() %}  
+            {% for jid, job_data in jobs.items()|sort(reverse = True) %}  
             <tr>
               {% if job_data.Target is string %}
               <td>{{ jid }}</td><td>{{ job_data.Target }}</td><td>{{ job_data['Target-type'] }}</td><td>{{ job_data.Arguments }}</td>
+              {% elif job_data['Target-type'] == "compound" %}
+              <td>{{ jid }}</td><td>{{ job_data.Target|replace(",", ", ") }}</td><td>{{ job_data['Target-type'] }}</td><td>{{ job_data.Arguments }}</td>
               {% else %}
               <td>{{ jid }}</td><td>{{ job_data.Target|join(", ") }}</td><td>{{ job_data['Target-type'] }}</td><td>{{ job_data.Arguments }}</td>
               {% endif %}
+
             </tr>
             {% endfor %}
           </tbody>
@@ -49,7 +52,9 @@
 <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
 <script>
   $(document).ready( function () {
-    var table1 = $('#table1').DataTable();
+    var table1 = $('#table1').DataTable({
+      "order": [[ 1, "desc" ]]
+    });
     $('#table1').on('click', 'tr', function () {
         var data = table1.row( this ).data();
         document.location.href = '/jobs/' + data[0];
