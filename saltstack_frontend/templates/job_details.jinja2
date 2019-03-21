@@ -12,7 +12,7 @@
       </div>
     <!-- <div class="card-body"> -->
       <div class="list-group">
-      {% for minion in minions_job_result.keys() %}
+      {% for minion in minions_job_result.keys()|sort %}
         {% set status_class = "list-group-item-danger" if minions_job_result[minion]['failed'] else "" %}
         <a class="list-group-item list-group-item-action {{ status_class }}" href="{{ request.path }}?minion={{ minion }}">
         <span class="badge badge-secondary badge-pill">{{ minions_job_result[minion]['num_steps']}}</span>&nbsp{{ minion }}</a>
@@ -28,15 +28,29 @@
       <ul class="list-group">
         {%- for step in minions_job_result[minion_id]['result']['return'] %}
         {%- if minions_job_result[minion_id]['num_steps'] > 0 %}
-        <li class="list-group-item list-group-item-action">
+        {%- set step_status_class = "list-group-item-danger" if not minions_job_result[minion_id]['result']['return'][step]['result'] else "" %}
+        <a class="list-group-item list-group-item-action {{ step_status_class }}" href="javascript:void(0)">
           <div class="d-flex w-100 job-title" id="job-title-{{ loop.index }}">
-            <h6>{{ minions_job_result[minion_id]['result']['return'][step]['__id__'] }}
-            {{ minions_job_result[minion_id]['result']['return'][step]['__run_num__']}}</h6>
+            {{step + 1}} - {{ minions_job_result[minion_id]['result']['return'][step]['__id__']|default(minions_job_result[minion_id]['result']['steps_id'][step]) }}
           </div>
+          
           <p class="mb-1 job-step">
-            {{ minions_job_result[minion_id]['result']['return'][step]['changes'] }}
+            {% if 'retcode' in minions_job_result[minion_id]['result']['return'][step]['changes'] %}
+            ---stdout---<br>
+            <small>
+              {{ minions_job_result[minion_id]['result']['return'][step]['changes']['stdout']|replace('\n','<br>'|safe) }}
+            </small>
+            {% if minions_job_result[minion_id]['result']['return'][step]['changes']['stderr']|length > 0 %}
+            <br>---stderr---<br>
+            <small>
+              {{ minions_job_result[minion_id]['result']['return'][step]['changes']['stderr']|replace('\n','<br>'|safe) }}
+            </small>
+            {% endif %}
+            {% else %}
+            {{ minions_job_result[minion_id]['result']['return'][step]['comment']|replace('\n','<br>'|safe) }}
+            {% endif %}
           </p>
-        </li>
+        </a>
         {% else %}
           <li class="list-group-item list-group-item-action">{{ step|e }}</li>
         {% endif %}
@@ -54,6 +68,7 @@
 <script>
 $(".job-step").hide();
 $(".job-title").click(function(){
+  $(this).toggleClass("font-weight-bold");
   $(this).next().toggle();
 });
 </script>
