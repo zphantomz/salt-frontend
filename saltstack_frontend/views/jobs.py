@@ -32,7 +32,7 @@ def view_job_details(request):
       minion: GET parameter, optional name of the minion to see job results
     return:
       job_result: {'return': <value> } where value can be:
-      
+
     """
     minions_job_result = dict()
     minions_done_ok = 0
@@ -53,43 +53,43 @@ def view_job_details(request):
 
         if isinstance(job_result, str):
             # ssh minions that give error immediately at first connection
-            job_result = {'return': [job_result]}
+            log.info("Minion {} return with error".format(minion))
+            minion_job_data = [job_result]
             job_failed = True
         else:
             if isinstance(job_result['return'], dict):
                 if '_error' in job_result['return']:
                     # ssh minion that give error in returning data
-                    job_result['return'] = [job_result['return']['stderr']]
+                    minion_job_data = [job_result['return']['stderr']]
                     job_failed = True
+
                 elif 'error' in job_result['return']:
                     # minion that give error in returning data (like utf8 encoding)
-                    job_result['return'] = [job_result['return']]
-                    job_failed = True                    
+                    minion_job_data = [job_result['return']]
+                    job_failed = True
+
                 else:
                     num_steps = len(job_result['return'].keys())
-                    # Order output by __run_num__ by creating new dict: {sequence: step_data}
-                    # Need to create an index of internal salt name of steps, cause steps not done never have
-                    # a __id__ assigned.
-                    job_result['steps_id'] = {step['__run_num__']:step_name.split('_|-')[1] 
-                                              for step_name, step in job_result['return'].items()}
-                    job_result['return'] = {step['__run_num__']:step for step in job_result['return'].values()}
 
-                    # Analize step by step and mark failed
-                    for step in job_result['return']:
+                    # Analize step by step order them by __run_num__ and mark failed and warning step
+                    minion_job_data = dict()
+                    for step, step_data in job_result['return'].items():
                         # Find failed steps based on cmd.run (must evaluate retcode)
-                        if 'retcode' in job_result['return'][step]['changes']:
-                            if not job_result['return'][step]['changes']['retcode'] == 0:
-                               job_result['return'][step]['result'] = False
+                        if 'retcode' in step_data['changes']:
+                            if not step_data['changes']['retcode'] == 0:
+                               step_data['result'] = False
                                job_failed = True
+                        minion_job_data[job_result['return'][step]['__run_num__']] = step_data
+                        minion_job_data[job_result['return'][step]['__run_num__']]['step_id'] = step.split('_|-')[1]
 
         if not job_failed:
             minions_done_ok += 1
 
-        minions_job_result[minion] = {'result': job_result,
+        minions_job_result[minion] = {'data': minion_job_data,
                                       'num_steps': num_steps,
                                       'failed': job_failed
                                       }
-    #print(job_result)
+
     return {'minion_id': minion_id,
             'minions_total': len(minions_job_result),
             'minions_failed': len(minions_job_result) - minions_done_ok,
