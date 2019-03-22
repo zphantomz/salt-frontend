@@ -45,6 +45,9 @@ def view_job_details(request):
     for minion in job_data.get('Minions', {}):
         num_steps = 0
         job_failed = False
+        # Handle minions without any return
+        if not minion in job_data['Result']:
+            job_data['Result'][minion] = "Minion not return"
         if 'return' in job_data['Result'][minion]['return']:
             # salt-ssh put return inside other return
             job_result = job_data['Result'][minion]['return']
