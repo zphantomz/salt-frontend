@@ -4,6 +4,9 @@ from .. import models
 
 import pprint
 
+import logging
+log = logging.getLogger(__name__)
+
 
 @view_config(route_name='jobs', renderer='../templates/jobs_list.jinja2')
 def view_jobs(request):
@@ -45,10 +48,10 @@ def view_job_details(request):
     for minion in job_data.get('Minions', {}):
         num_steps = 0
         job_failed = False
-        # Handle minions without any return
-        if not minion in job_data['Result']:
-            job_data['Result'][minion] = "Minion not return"
-        if 'return' in job_data['Result'][minion]['return']:
+        if not minion in job_data['Result'].keys():
+            # Handle minions without any return
+            job_result = "Minion not return"
+        elif 'return' in job_data['Result'][minion]['return']:
             # salt-ssh put return inside other return
             job_result = job_data['Result'][minion]['return']
         else:
@@ -76,12 +79,21 @@ def view_job_details(request):
 
                     # Analize step by step order them by __run_num__ and mark failed and warning step
                     minion_job_data = dict()
+                    step_with_exception = 0
                     for step, step_data in job_result['return'].items():
                         # Find failed steps based on cmd.run (must evaluate retcode)
                         if 'retcode' in step_data['changes']:
                             if not step_data['changes']['retcode'] == 0:
                                step_data['result'] = False
                                job_failed = True
+                        elif not '__run_num__' in job_result['return'][step]:
+                            # Handle minion who give exception
+                            step_data['result'] = False
+                            job_failed = True
+                            job_result['return'][step]['__run_num__'] = (100 + step_with_exception)
+                            step_with_exception += 1
+                        else:
+                            pass
                         minion_job_data[job_result['return'][step]['__run_num__']] = step_data
                         minion_job_data[job_result['return'][step]['__run_num__']]['step_id'] = step.split('_|-')[1]
 
