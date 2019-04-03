@@ -8,14 +8,14 @@
       Minions (total: {{ minions_total }})
       {%- if minions_failed %}
       <span class="badge badge-danger float-right">Failed: {{ minions_failed }}</span>
-      {% endif %}
+      {%- endif %}
       </div>
     <!-- <div class="card-body"> -->
       <div class="list-group">
       {% for minion in minions_job_result.keys()|sort %}
         {% set status_class = "list-group-item-danger" if minions_job_result[minion]['failed'] else "" %}
         <a class="list-group-item list-group-item-action {{ status_class }}" href="{{ request.path }}?minion={{ minion }}">
-        <span class="badge badge-secondary badge-pill">{{ minions_job_result[minion]['num_steps']}}</span>&nbsp{{ minion }}</a>
+        <span class="badge badge-secondary badge-pill">{{ minions_job_result[minion]['num_steps'] }}</span>&nbsp{{ minion }} - {{ minions_job_result[minion]['steps_failed'] }}</a>
       {% endfor %}
       </div>
     <!-- </div> -->
@@ -40,20 +40,21 @@
         <li class="list-group-item list-group-item-action {{ step_status_class }}">
           <div class="d-flex w-100">
             <span class="job-title" id="job-title-{{ loop.index }}">
-              {{step + 1 }} - {{ minions_job_result[minion_id]['data'][step]['__id__']|default(minions_job_result[minion_id]['data'][step]['steps_id']) }}
+              {{step + 1 }} - {{ minions_job_result[minion_id]['data'][step]['step_id'] }}
             </span>
           </div>
           <p class="mb-1 job-step">
+            {# Handle output from cmd.run states #}
             {% if 'retcode' in minions_job_result[minion_id]['data'][step]['changes'] %}
             ---stdout---<br>
-            <small>
-              {{ minions_job_result[minion_id]['data'][step]['changes']['stdout']|replace('\n','<br>'|safe) }}
-            </small>
+            <small>{{ minions_job_result[minion_id]['data'][step]['changes']['stdout']|replace('\n','<br>'|safe) }}</small>
             {% if minions_job_result[minion_id]['data'][step]['changes']['stderr']|length > 0 %}
             <br>---stderr---<br>
-            <small>
-              {{ minions_job_result[minion_id]['data'][step]['changes']['stderr']|replace('\n','<br>'|safe) }}
-            </small>
+            <small>{{ minions_job_result[minion_id]['data'][step]['changes']['stderr']|replace('\n','<br>'|safe) }}</small>
+            {% endif %}
+            {% if 'changed' in minions_job_result[minion_id]['data'][step]['changes'] %}
+            <br>---Command Output---<br>
+            <small>{{ minions_job_result[minion_id]['data'][step]['changes']['data']|safe }}</small>
             {% endif %}
             {% else %}
             {{ minions_job_result[minion_id]['data'][step]['comment']|replace('\n','<br>'|safe) }}

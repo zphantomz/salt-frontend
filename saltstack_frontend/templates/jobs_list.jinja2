@@ -20,20 +20,22 @@
           <thead>
             <th>Job Id</th>
             <th>Target</th>
-            <th>Target Type</th>
+            <th>Type</th>
             <th>Argument</th>
           </thead>
           <tbody>
-            {% for jid, job_data in jobs.items()|sort(reverse = True) %}  
+            {% for jid, job_data in jobs.items() %}  
             <tr>
-              {% if job_data.Target is string %}
-              <td>{{ jid }}</td><td>{{ job_data.Target }}</td><td>{{ job_data['Target-type'] }}</td><td>{{ job_data.Arguments }}</td>
-              {% elif job_data['Target-type'] == "compound" %}
-              <td>{{ jid }}</td><td>{{ job_data.Target|replace(",", ", ") }}</td><td>{{ job_data['Target-type'] }}</td><td>{{ job_data.Arguments }}</td>
-              {% else %}
-              <td>{{ jid }}</td><td>{{ job_data.Target|join(", ") }}</td><td>{{ job_data['Target-type'] }}</td><td>{{ job_data.Arguments }}</td>
-              {% endif %}
-
+              <td data-order={{ jid }} style="white-space: nowrap;">{{ job_data.StartTime[:-7] }}</td>
+              {%- if job_data.Target is string %}
+              <td>{{ job_data.Target }}</td>
+              {%- elif job_data['Target-type'] == "compound" %}
+              <td>{{ job_data.Target|replace(",", ", ") }}</td>
+              {%- else %}
+              <td>{{ job_data.Target|join(", ") }}</td>
+              {%- endif %}
+              <td>{{ job_data['Target-type'] }}</td>
+              <td>{{ job_data.Arguments }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -57,7 +59,8 @@
     });
     $('#table1').on('click', 'tr', function () {
         var data = table1.row( this ).data();
-        document.location.href = '/jobs/' + data[0];
+        //console.log(data[0]['@data-order']);
+        document.location.href = '/jobs/' + data[0]['@data-order'];
       });
   });
 </script>
