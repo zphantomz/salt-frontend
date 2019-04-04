@@ -48,6 +48,8 @@ def view_job_details(request):
 
     for minion in job_data.get('Minions', {}):
         num_steps = 0
+        step_with_exception = 0
+        minion_job_data = dict()
         job_failed = False
         if not minion in job_data['Result'].keys():
             # Handle minions without any return
@@ -63,6 +65,11 @@ def view_job_details(request):
             log.info("Minion {} return with error".format(minion))
             minion_job_data = [job_result]
             job_failed = True
+        elif isinstance(job_result['return'], list):
+            # minion that received wrong commands (like states not found)
+            log.info("Minion {} return with error".format(minion))
+            minion_job_data = [job_result['return'][0]]
+            job_failed = True            
         elif isinstance(job_result['return'], str):
             # minion with no return
             log.info("Minion {} return with error".format(minion))
@@ -70,9 +77,6 @@ def view_job_details(request):
             job_failed = True            
         else:
             if isinstance(job_result['return'], dict):
-                minion_job_data = dict()
-                step_with_exception = 0
-                num_steps = 0
                 if '_error' in job_result['return']:
                     # ssh minion that give error in returning data
                     minion_job_data = [job_result['return']['stderr']]

@@ -9,5 +9,6 @@ def includeme(config):
         QueryStringConstantCacheBuster(__version__))
     config.add_route('index', '/')
     config.add_route('minions', '/minions')
+    config.add_route('pillars', '/pillars')
     config.add_route('jobs', '/jobs')
     config.add_route('job_details', '/jobs/{id}')

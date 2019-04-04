@@ -8,3 +8,8 @@ def view_index(request):
 def view_minions(request):
     return {'project': 'Saltstack Frontend'}
 
+@view_config(route_name='pillars', renderer='../templates/pillars.jinja2')
+def view_pillars(request):
+    import glob
+    pillar_files = glob.glob("/srv/pillar/*.sls")
+    return {'pillar_files': pillar_files}

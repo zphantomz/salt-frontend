@@ -14,8 +14,13 @@
       <div class="list-group">
       {% for minion in minions_job_result.keys()|sort %}
         {% set status_class = "list-group-item-danger" if minions_job_result[minion]['failed'] else "" %}
-        <a class="list-group-item list-group-item-action {{ status_class }}" href="{{ request.path }}?minion={{ minion }}">
-        <span class="badge badge-secondary badge-pill">{{ minions_job_result[minion]['num_steps'] }}</span>&nbsp{{ minion }} - {{ minions_job_result[minion]['steps_failed'] }}</a>
+        <a class="list-group-item list-group-item-action {{ status_class }}" style="padding-top: .20rem; padding-bottom: .20rem;" href="{{ request.path }}?minion={{ minion }}">
+          {{ minion }}<br>
+        <span class="badge badge-secondary">Total: {{ minions_job_result[minion]['num_steps'] }}</span>
+        {% if minions_job_result[minion]['steps_failed'] %}
+        <span class="badge badge-danger">Failed: {{ minions_job_result[minion]['steps_failed'] }}</span>
+        {% endif %}
+        </a>
       {% endfor %}
       </div>
     <!-- </div> -->
