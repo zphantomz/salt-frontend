@@ -1,0 +1,63 @@
+{% extends "layout.jinja2" %}
+{% block css %}
+<link rel="stylesheet" href="{{request.static_url('saltstack_frontend:static/css/bootstrap-treeview.min.css')}}">
+{% endblock css %}
+{% block content %}
+<div class="row">
+  <div class="col-5">
+    <div class="card">
+      <div class="card-header">
+        Pillar Files
+      </div>
+        <div id="tree"></div>
+
+    </div> 
+  </div>
+</div>
+{% endblock content %}
+{% block js %}
+<script src="{{request.static_url('saltstack_frontend:static/js/bootstrap-treeview.min.js')}}"></script>
+<script>
+function getTree() {
+  var tree = [
+    {
+      text: "Parent 1",
+      nodes: [
+        {
+          text: "Child 1",
+          nodes: [
+            {
+              text: "Grandchild 1"
+            },
+            {
+              text: "Grandchild 2"
+            }
+          ]
+        },
+        {
+          text: "Child 2"
+        }
+      ]
+    },
+    {
+      text: "Parent 2"
+    },
+    {
+      text: "Parent 3"
+    },
+    {
+      text: "Parent 4"
+    },
+    {
+      text: "Parent 5"
+    }
+  ];
+  return tree;
+}
+
+$('#tree').treeview({
+  data: getTree(),
+  showBorder: false
+  });
+</script>
+{% endblock js %}
