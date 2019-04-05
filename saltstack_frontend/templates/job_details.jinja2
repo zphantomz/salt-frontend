@@ -33,7 +33,7 @@
       <div class="card-header" id="minion-details"><i class="cui-justify-center"></i>{{ minion_id }}</div>
       <ul class="list-group">
         {# Change background on different status result #}
-        {%- for step in minions_job_result[minion_id]['data'] %}
+        {%- for step in minions_job_result[minion_id]['data']|sort %}
         {%- if minions_job_result[minion_id]['num_steps'] > 0 %}
         {%- if minions_job_result[minion_id]['data'][step]['result'] == False %}
         {%- set step_status_class = "list-group-item-danger" %}
