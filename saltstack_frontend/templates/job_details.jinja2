@@ -17,8 +17,11 @@
         <a class="list-group-item list-group-item-action {{ status_class }}" style="padding-top: .20rem; padding-bottom: .20rem;" href="{{ request.path }}?minion={{ minion }}">
           {{ minion }}<br>
         <span class="badge badge-secondary">Total: {{ minions_job_result[minion]['num_steps'] }}</span>
-        {% if minions_job_result[minion]['steps_failed'] %}
-        <span class="badge badge-danger">Failed: {{ minions_job_result[minion]['steps_failed'] }}</span>
+        {% if minions_job_result[minion]['steps_fail'] %}
+        <span class="badge badge-danger">Failed: {{ minions_job_result[minion]['steps_fail'] }}</span>
+        {% endif %}
+        {% if minions_job_result[minion]['steps_warn'] %}
+        <span class="badge badge-warning">Warning: {{ minions_job_result[minion]['steps_warn'] }}</span>
         {% endif %}
         </a>
       {% endfor %}
@@ -33,11 +36,13 @@
       <div class="card-header" id="minion-details"><i class="cui-justify-center"></i>{{ minion_id }}</div>
       <ul class="list-group">
         {# Change background on different status result #}
-        {%- for step in minions_job_result[minion_id]['data']|sort %}
+        {%- for step in minions_job_result[minion_id]['data'] %}
         {%- if minions_job_result[minion_id]['num_steps'] > 0 %}
-        {%- if minions_job_result[minion_id]['data'][step]['result'] == False %}
+        {%- if minions_job_result[minion_id]['data'][step]['result'] == 'failed' %}
         {%- set step_status_class = "list-group-item-danger" %}
-        {%- elif minions_job_result[minion_id]['data'][step]['result'] == None %}
+        {%- elif minions_job_result[minion_id]['data'][step]['result'] == 'warn' %}
+        {%- set step_status_class = "list-group-item-warning" %}
+        {%- elif minions_job_result[minion_id]['data'][step]['result'] == 'info' %}
         {%- set step_status_class = "list-group-item-info" %}
         {%- else %}
         {%- set step_status_class = "" %}

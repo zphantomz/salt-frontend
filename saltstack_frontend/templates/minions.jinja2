@@ -1,56 +1,100 @@
 {% extends "layout.jinja2" %}
+{% block css %}
+    <link rel="stylesheet" href="{{request.static_url('saltstack_frontend:static/css/datatables.bootstrap4.css')}}">
+{% endblock css %}
 
 {% block content %}
 <div class="row">
-  {% for i in range(4) %}
-  <div class="col">
-  	<div class="card">
-        <div class="card-header">
-        Featured
-      </div>
-      <div class="card-body">
-        <h5 class="card-title">Special title treatment</h5>
-        <p class="card-text">It's a broader card with text below as a natural lead-in to extra content. This content is a little longer.</p>
-        <a href="#" class="btn btn-primary">Go somewhere</a>
-      </div>
-    </div>
-  </div>
-  {% endfor %}
-</div>
-<div class="row">
-  <div class="col-12">
-  	<div class="card">
-        <div class="card-header">
-        Featured
-      </div>
-      <div class="card-body">
+  <div class="col-9">
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" data-toggle="tab" href="#minions" role="tab" aria-controls="home">
+          <i class="cui-cog"></i> Minions
+          <span class="badge badge-info">{{ minions['minions']|length }}</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#ssh-minions" role="tab" aria-controls="profile">
+          <i class="cui-monitor"></i> SSh Minions
+          <span class="badge badge-secondary">{{ minions['ssh-minions']|length }}</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#nodegroup" role="tab" aria-controls="profile">
+          <i class="cui-people"></i> Nodegroups
+          <span class="badge badge-info">{{ nodegroups['nodegroups']|length }}</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#ssh-nodegroup" role="tab" aria-controls="profile">
+          <i class="cui-people"></i> SSh Nodegroups
+          <span class="badge badge-secondary">{{ nodegroups['ssh_list_nodegroups']|length }}</span>
+        </a>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane active" id="minions" role="tabpanel">
         <table class="table table-sm" id="table1">
           <thead>
-            <th>Data</th>
+            <th>Name</th>
             <th>Minions</th>
           </thead>
           <tbody>
+            {% for minion in minions['minions'] %}
             <tr>
-              <td>Uno</td><td>Due</td>
+              <td>{{ minion }}</td>
+              <td><a class="btn btn-sm btn-info" href="#">Due</a></td>
             </tr>
-            <tr>
-              <td>tre</td><td>tre</td>
-            </tr>
+            {% endfor %}
           </tbody>
-        </table>
+        </table>  
+      </div>
+      <div class="tab-pane" id="ssh-minions" role="tabpanel">
+        <table class="table table-sm" id="table2">
+          <thead>
+            <th>Name</th>
+            <th>Ip Address</th>
+          </thead>
+          <tbody>
+            {% for minion, data in minions['ssh-minions'].items() %}
+            <tr>
+              <td>{{ minion }}</td><td>{{ data.host }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>    
+      </div>
+      <div class="tab-pane" id="nodegroup" role="tabpanel">
+        Working in progress 
+      </div>
+      <div class="tab-pane" id="ssh-nodegroup" role="tabpanel">
+        Working in progress 
+      </div>
+    </div>
+  </div>
+  <div class="col-3">
+    <div class="card">
+      <div class="card-header">
+        Info
+      </div>
+      <div class="card-body">
+        ciao
       </div>
     </div>
   </div>
 </div>
 {% endblock content %}
 {% block js %}
-<script src="{{request.static_url('saltstack_frontend:static/js/jquery.dataTables.js')}}"></script>
-<script src="{{request.static_url('saltstack_frontend:static/js/dataTables.bootstrap4.js')}}"></script>
+<script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
 <script>
   $(document).ready( function () {
     $('#table1').DataTable( {
       ordering: true
     });
-} );
+    $('#table2').DataTable( {
+      ordering: true
+    });
+  });
 </script>
 {% endblock js %}

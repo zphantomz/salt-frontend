@@ -3,10 +3,12 @@ from pyramid.httpexceptions import HTTPFound
 from .. import models
 
 import pprint
+import re
 
 import logging
 log = logging.getLogger(__name__)
 
+warn_step_regexp = re.compile(".*not_present$|^WARN")
 
 @view_config(route_name='jobs', renderer='../templates/jobs_list.jinja2')
 def view_jobs(request):
@@ -48,7 +50,8 @@ def view_job_details(request):
 
     for minion in job_data.get('Minions', {}):
         num_steps = 0
-        step_with_exception = 0
+        steps_fail = 0
+        steps_warn = 0
         minion_job_data = dict()
         job_failed = False
         if not minion in job_data['Result'].keys():
@@ -60,21 +63,24 @@ def view_job_details(request):
         else:
             job_result = job_data['Result'][minion]
 
+        # ssh minions that give error immediately at first connection
         if isinstance(job_result, str):
-            # ssh minions that give error immediately at first connection
             log.info("Minion {} return with error".format(minion))
             minion_job_data = [job_result]
             job_failed = True
+        
+        # minion that received wrong commands (like states not found)
         elif isinstance(job_result['return'], list):
-            # minion that received wrong commands (like states not found)
             log.info("Minion {} return with error".format(minion))
             minion_job_data = [job_result['return'][0]]
             job_failed = True            
+
+        # minion with no return
         elif isinstance(job_result['return'], str):
-            # minion with no return
             log.info("Minion {} return with error".format(minion))
             minion_job_data = ["No Return"]
             job_failed = True            
+        
         else:
             if isinstance(job_result['return'], dict):
                 if '_error' in job_result['return']:
@@ -89,41 +95,58 @@ def view_job_details(request):
                 
                 else:
                     num_steps = len(job_result['return'].keys())
-                    # Analize step by step order them by __run_num__ and mark failed and warning step
+                    # Analize step by step and mark failed and warning step
                     for step, step_data in job_result['return'].items():
+                        # Alwais force a step name, not based on __id__ key, that some time is missing...
+                        step_id = step.split('_|-')[1]
+                        
                         # Steps based on cmd.run (must evaluate retcode to find failed steps)
                         if 'retcode' in step_data['changes']:
                             if not step_data['changes']['retcode'] == 0:
-                               step_data['result'] = False
+                               step_data['result'] = 'failed'
                                job_failed = True
-                               step_with_exception += 1
+                               steps_fail += 1
+                        
+                        # Handle minion who give exception
                         elif not '__run_num__' in job_result['return'][step]:
-                            # Handle minion who give exception
-                            step_data['result'] = False
+                            step_data['result'] = 'failed'
                             job_failed = True
-                            job_result['return'][step]['__run_num__'] = (1000 + step_with_exception)
-                            step_with_exception += 1
+                            job_result['return'][step]['__run_num__'] = (1000 + steps_fail)
+                            steps_fail += 1
+                        
+                        # Steps not executed (require, onfail etc...)
                         elif not 'duration' in job_result['return'][step]:
-                            # Steps not executed (require, onfail etc...)
-                            step_data['result'] = None
+                            step_data['result'] = 'info'
+                        
+                        # Other steps who return False (Failed steps)
                         elif step_data['result'] == False:
-                            # Steps who return False (Failed steps)
+                            step_data['result'] = 'failed'
                             job_failed = True
-                            step_with_exception += 1
+                            steps_fail += 1
                         else:
-                            pass
+                            pass                        
+
+                        # Steps where id match warning regex string
+                        if re.match(warn_step_regexp, step_id):
+                            steps_warn += 1
+                            step_data['result'] = 'warn'
+                            # decrease failed count (it became only warning)
+                            if step_data['result'] == 'failed':
+                                steps_fail -= 1
+
                         #log.info("Minion: {} step: {} failed: {}".format(minion, step.split('_|-')[1], job_failed))
                         minion_job_data[job_result['return'][step]['__run_num__']] = step_data
-                        # Alwais force a step name, not based on __id__ key, some time is missing...
-                        minion_job_data[job_result['return'][step]['__run_num__']]['step_id'] = step.split('_|-')[1]
+                        minion_job_data[job_result['return'][step]['__run_num__']]['step_id'] = step_id
 
         if not job_failed:
             minions_done_ok += 1
         #log.info("Minion: {} job_failed: {}".format(minion, job_failed))
+
         minions_job_result[minion] = {'data': minion_job_data,
                                       'num_steps': num_steps,
                                       'failed': job_failed,
-                                      'steps_failed': step_with_exception
+                                      'steps_fail': steps_fail,
+                                      'steps_warn': steps_warn
                                       }
 
     return {'minion_id': minion_id,
