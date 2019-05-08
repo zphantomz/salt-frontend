@@ -1,6 +1,8 @@
 {% extends "layout.jinja2" %}
 {% block css %}
     <link rel="stylesheet" href="{{request.static_url('saltstack_frontend:static/css/datatables.bootstrap4.css')}}">
+    <link rel="stylesheet" href="{{request.static_url('saltstack_frontend:static/css/select2.min.css')}}">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.7/css/select2.min.css"> -->
 {% endblock css %}
 
 {% block content %}
@@ -20,13 +22,13 @@
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" data-toggle="tab" href="#nodegroup" role="tab" aria-controls="profile">
+        <a class="nav-link" data-toggle="tab" href="#nodegroups" role="tab" aria-controls="profile">
           <i class="cui-people"></i> Nodegroups
           <span class="badge badge-info">{{ nodegroups['nodegroups']|length }}</span>
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" data-toggle="tab" href="#ssh-nodegroup" role="tab" aria-controls="profile">
+        <a class="nav-link" data-toggle="tab" href="#ssh-nodegroups" role="tab" aria-controls="profile">
           <i class="cui-people"></i> SSh Nodegroups
           <span class="badge badge-secondary">{{ nodegroups['ssh_list_nodegroups']|length }}</span>
         </a>
@@ -64,11 +66,35 @@
           </tbody>
         </table>    
       </div>
-      <div class="tab-pane" id="nodegroup" role="tabpanel">
-        Working in progress 
+      <div class="tab-pane" id="nodegroups" role="tabpanel">
+        <table class="table table-sm" id="table3">
+          <thead>
+            <th>Name</th>
+            <th>Minions</th>
+          </thead>
+          <tbody>
+            {% for group, data in nodegroups['nodegroups'].items() %}
+            <tr>
+              <td>{{ group }}</td><td>{{ data|replace(',', ', ') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>   
       </div>
-      <div class="tab-pane" id="ssh-nodegroup" role="tabpanel">
-        Working in progress 
+      <div class="tab-pane" id="ssh-nodegroups" role="tabpanel">
+        <table class="table table-sm" id="table4">
+          <thead>
+            <th>Name</th>
+            <th>Minions</th>
+          </thead>
+          <tbody>
+            {% for group, data in nodegroups['ssh_list_nodegroups'].items() %}
+            <tr>
+              <td>{{ group }}</td><td>{{ data|replace(',', ', ') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>   
       </div>
     </div>
   </div>
@@ -78,7 +104,14 @@
         Info
       </div>
       <div class="card-body">
-        ciao
+        <fieldset class="form-group">
+          <label> Gruppi</label>
+          <select class="form-control select2-multiple" id="select_groups" multiple="">
+            <option value="AL">Alabama</option>
+            <option value="WY">Wyoming</option>
+            <option value="IT">Italy</option>
+          </select>
+        </fieldset>
       </div>
     </div>
   </div>
@@ -87,14 +120,22 @@
 {% block js %}
 <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script src="{{request.static_url('saltstack_frontend:static/js/select2.min.js')}}"></script>
 <script>
-  $(document).ready( function () {
+  $(document).ready(function() {
     $('#table1').DataTable( {
       ordering: true
     });
     $('#table2').DataTable( {
       ordering: true
     });
+    $('#table3').DataTable( {
+      ordering: true
+    });
+    $('#table4').DataTable( {
+      ordering: true
+    });
+    $('#select_groups').select2({theme:'bootstrap'});
   });
 </script>
 {% endblock js %}
