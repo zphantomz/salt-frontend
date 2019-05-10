@@ -3,9 +3,7 @@ import yaml
 from functools import lru_cache
 import logging
 from ast import literal_eval
-
-nodegroup_files = "/etc/salt/master.d/groups.conf"
-ssh_nodegroup_files = "/etc/salt/master.d/ssh_groups.conf"
+import glob
 
 log = logging.getLogger(__name__)
 
@@ -74,24 +72,21 @@ def get_minions():
 def get_nodegroups():
     """ Get list of nodegroups and matched minions (work only with minion-id pattern matching)
     output:
-      nodegroups dict(): {'minions': {'name': data}
-                          'ssh-minions': {'name': data}
+      nodegroups dict(): {'nodegroups': {'name': list}
+                          'ssh_list_nodegroups': {'name': list}
                          }
     """
     nodegroups = dict()
-    try:
-        with open(nodegroup_files, "r") as f:
-            data = yaml.load(f, Loader=yaml.SafeLoader)
-    except Exception as e:
-        log.warn("Error ({}) during nodegroups file parsing")
-        data = {'nodegroups': dict()}    
-    nodegroups['nodegroups'] = data['nodegroups']
-    try:
-        with open(ssh_nodegroup_files, "r") as f:
-            data = yaml.load(f, Loader=yaml.SafeLoader)
-    except Exception as e:
-        log.warn("Error ({}) during ssh nodegroups file parsing")
-        data = {'ssh_list_nodegroups': dict()}
-    nodegroups['ssh_list_nodegroups'] = data['ssh_list_nodegroups']
+    salt_config_files = glob.glob("/etc/salt/master.d")
+    for file in salt_config_files:
+        try:
+            with open(file, "r") as f:
+                data = yaml.load(f, Loader=yaml.SafeLoader)
+        except Exception as e:
+            log.warning("Error ({}) during file parsing".format(e))
+        if 'nodegroups' in data.keys():
+            nodegroups['nodegroups'] = data['nodegroups']
+        if 'ssh_list_nodegroups' in data.keys():
+            nodegroups['ssh_list_nodegroups'] = data['ssh_list_nodegroups']
 
     return nodegroups
