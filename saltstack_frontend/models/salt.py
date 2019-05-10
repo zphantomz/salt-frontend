@@ -76,14 +76,20 @@ def get_nodegroups():
                           'ssh_list_nodegroups': {'name': list}
                          }
     """
-    nodegroups = dict()
-    salt_config_files = glob.glob("/etc/salt/master.d")
-    for file in salt_config_files:
+    nodegroups = {'nodegroups': {},
+                  'ssh_list_nodegroups': {}
+                 }
+    salt_config_files = glob.glob("/etc/salt/master.d/*.conf")
+    for filename in salt_config_files:
         try:
-            with open(file, "r") as f:
+            with open(filename, "r") as f:
+                log.debug("Reading file: {}".format(filename))
                 data = yaml.load(f, Loader=yaml.SafeLoader)
         except Exception as e:
             log.warning("Error ({}) during file parsing".format(e))
+            data = {}
+        if not isinstance(data, dict):
+            continue
         if 'nodegroups' in data.keys():
             nodegroups['nodegroups'] = data['nodegroups']
         if 'ssh_list_nodegroups' in data.keys():
