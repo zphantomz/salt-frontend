@@ -3,6 +3,7 @@ import yaml
 from functools import lru_cache
 import logging
 from ast import literal_eval
+
 import glob
 
 log = logging.getLogger(__name__)
@@ -21,7 +22,7 @@ def get_jobs():
 
 @lru_cache(maxsize=32)
 def get_job(job_id):
-    """ Get info about a single job. Using literal_eval istead of json cause a common error on the 
+    """ Get info about a single job. Using literal_eval istead of json cause a common error on the
     json salt output module that give an exception with non pure ascii characters
     params:
       job_id: numeric id of job
@@ -65,11 +66,11 @@ def get_minions():
         log.warn("Error ({}) during roster file parsing")
         data = {}
     minions['ssh-minions'] = data
-    
+
     return minions
 
 @lru_cache(maxsize=2)
-def get_nodegroups():
+def get_nodegroups(nodegroups_config_files = "", ssh_nodegroups_config_files=""):
     """ Get list of nodegroups and matched minions (work only with minion-id pattern matching)
     output:
       nodegroups dict(): {'nodegroups': {'name': list}
@@ -79,20 +80,21 @@ def get_nodegroups():
     nodegroups = {'nodegroups': {},
                   'ssh_list_nodegroups': {}
                  }
-    salt_config_files = glob.glob("/etc/salt/master.d/*.conf")
-    for filename in salt_config_files:
-        try:
-            with open(filename, "r") as f:
-                log.debug("Reading file: {}".format(filename))
-                data = yaml.load(f, Loader=yaml.SafeLoader)
-        except Exception as e:
-            log.warning("Error ({}) during file parsing".format(e))
-            data = {}
-        if not isinstance(data, dict):
-            continue
-        if 'nodegroups' in data.keys():
-            nodegroups['nodegroups'] = data['nodegroups']
-        if 'ssh_list_nodegroups' in data.keys():
-            nodegroups['ssh_list_nodegroups'] = data['ssh_list_nodegroups']
+    try:
+        with open(nodegroups_config_files, "r") as f:
+            log.debug("Reading nodegroups file: {}".format(nodegroups_config_files))
+            data = yaml.load(f, Loader=yaml.SafeLoader)
+    except Exception as e:
+        log.warning("Error ({}) during file parsing".format(e))
+        data = {}
+    nodegroups['nodegroups'] = data.get('nodegroups', {})
+    try:
+        with open(ssh_nodegroups_config_files, "r") as f:
+            log.debug("Reading nodegroups file: {}".format(ssh_nodegroups_config_files))
+            data = yaml.load(f, Loader=yaml.SafeLoader)
+    except Exception as e:
+        log.warning("Error ({}) during file parsing".format(e))
+        data = {}
+    nodegroups['ssh_list_nodegroups'] = data.get('ssh_list_nodegroups', {})
 
     return nodegroups

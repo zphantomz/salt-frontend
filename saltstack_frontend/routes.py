@@ -4,6 +4,7 @@ from . import __version__
 
 def includeme(config):
     config.add_static_view('static', 'static', cache_max_age=3600)
+    # Used to add __version__ variable in css and js include
     config.add_cache_buster(
         'static',
         QueryStringConstantCacheBuster(__version__))
