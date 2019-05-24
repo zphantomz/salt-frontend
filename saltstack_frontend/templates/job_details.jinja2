@@ -66,6 +66,11 @@
             <br>---Command Output---<br>
             <small>{{ minions_job_result[minion_id]['data'][step]['changes']['data']|safe }}</small>
             {% endif %}
+            {% elif 'data' in minions_job_result[minion_id]['data'][step] %}
+            {# Handle output from http.get states #}
+            {{ minions_job_result[minion_id]['data'][step]['comment']|replace('\n','<br>'|safe) }}
+            <br>---HTTP output---<br>
+            <small>{{ minions_job_result[minion_id]['data'][step]['data']['body']|safe }}</small>
             {% else %}
             {{ minions_job_result[minion_id]['data'][step]['comment']|replace('\n','<br>'|safe) }}
             <br><small>{{ minions_job_result[minion_id]['data'][step]['changes']|replace('\n','<br>'|safe) }}</small>
