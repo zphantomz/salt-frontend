@@ -1,0 +1,10 @@
+{{ minion_id }}
+************************************************************************
+
+{%- for step in minions_job_result[minion_id]['data']|sort %}
+{{step + 1 }} - {{ minions_job_result[minion_id]['data'][step]['result'] }} - {{ minions_job_result[minion_id]['data'][step]['step_id'] }}
+************************************************************************
+{%- for k,v in minions_job_result[minion_id]['data'][step].items() %}
+{{ k }}:{{ v | safe }}
+{%- endfor %}
+{% endfor %}
