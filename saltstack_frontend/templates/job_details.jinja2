@@ -73,6 +73,7 @@
             <small>{{ minions_job_result[minion_id]['data'][step]['data']['body']|safe }}</small>
             {% else %}
             {{ minions_job_result[minion_id]['data'][step]['comment']|replace('\n','<br>'|safe) }}
+            <br><small>{{ minions_job_result[minion_id]['data'][step]['name']|safe }}</small>
             <br><small>{{ minions_job_result[minion_id]['data'][step]['changes']|replace('\n','<br>'|safe) }}</small>
             {% endif %}
           </p>

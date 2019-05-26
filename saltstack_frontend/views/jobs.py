@@ -1,13 +1,15 @@
 from pyramid.view import view_config
+from pyramid.response import Response
+from pyramid.renderers import render
 from pyramid.httpexceptions import HTTPFound
 from .. import models
 
-import pprint
 import re
 
 import logging
 log = logging.getLogger(__name__)
 
+# Regexp used in frontend to show some steps as failed with a yellow "warn" background
 warn_step_regexp = re.compile(".*not_present$|^WARN")
 
 @view_config(route_name='jobs', renderer='../templates/jobs_list.jinja2')
@@ -148,6 +150,14 @@ def view_job_details(request):
                                       'steps_fail': steps_fail,
                                       'steps_warn': steps_warn
                                       }
+    if request.params.get('output', None) == 'txt' and minion_id:
+        res = render("../templates/job_details_txt.jinja2",
+                     {'minion_id': minion_id,
+                      'minions_job_result': minions_job_result},
+                      request=request)
+        response = Response(res)
+        response.content_type = 'text/plain'
+        return response
 
     return {'minion_id': minion_id,
             'minions_total': len(minions_job_result),

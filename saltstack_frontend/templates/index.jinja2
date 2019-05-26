@@ -1,21 +1,57 @@
 {% extends "layout.jinja2" %}
-
+{% block css %}
+    <link rel="stylesheet" href="{{request.static_url('saltstack_frontend:static/css/simple-line-icons.css')}}">
+{% endblock css %}
 {% block content %}
 <div class="row">
-  {% for i in range(4) %}
   <div class="col">
-  	<div class="card">
-        <div class="card-header">
-        Featured
-      </div>
+    <div class="card bg-primary text-white">
       <div class="card-body">
-        <h5 class="card-title">Special title treatment</h5>
-        <p class="card-text">It's a broader card with text below as a natural lead-in to extra content. This content is a little longer.</p>
-        <a href="#" class="btn btn-primary">Go somewhere</a>
+        <div class="h1 text-muted text-right mb-4">Minions
+          <i class="icon-ghost"></i>
+        </div>
+        <div class="text-value">
+          {{ minions.minions|length }} / {{ minions['ssh-minions']|length }}
+        </div>
+        <small class="text-muted text-uppercase font-weight-bold">Minions / SSH-Minions</small>
       </div>
     </div>
   </div>
-  {% endfor %}
+  <div class="col">
+    <div class="card bg-warning text-white">
+      <div class="card-body">
+        <div class="h1 text-muted text-right mb-4">Pillars
+          <i class="icon-playlist"></i>
+        </div>
+        <div class="text-value">
+          {{ pillars|length }}
+        </div>
+        <small class="text-muted text-uppercase font-weight-bold">files</small>
+      </div>
+    </div>
+  </div>  
+  <div class="col">
+    <div class="card bg-gray-800 text-white">
+      <div class="card-body">
+        <div class="h1 text-muted text-right mb-4">Other?
+          <i class="icon-briefcase"></i>
+        </div>
+        <div class="text-value">??</div>
+        <small class="text-muted text-uppercase font-weight-bold">...</small>
+      </div>
+    </div>
+  </div>  
+  <div class="col">
+    <div class="card bg-info text-white">
+      <div class="card-body">
+        <div class="h1 text-muted text-right mb-4">Job Cache
+          <i class="icon-briefcase"></i>
+        </div>
+        <div class="text-value">{{ jobs|length }}</div>
+        <small class="text-muted text-uppercase font-weight-bold">JOBS</small>
+      </div>
+    </div>
+  </div>  
 </div>
 <div class="row">
   <div class="col-12">

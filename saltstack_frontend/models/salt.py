@@ -8,14 +8,21 @@ import glob
 
 log = logging.getLogger(__name__)
 
+
 @lru_cache(maxsize=2)
 def get_jobs():
-    cmd = ['sudo', 'salt-run', 'jobs.list_jobs', 'search_function="state.apply"', '--output=raw']
+    """ Get list of all jobs from the job cache.
+    output:
+      dict(): list of all jobs.
+    """
+    cmd = ['sudo', 'salt-run', 'jobs.list_jobs',
+           'search_function="state.apply"', '--output=raw']
     out = subprocess.run(cmd, stdout=subprocess.PIPE)
     try:
         data = literal_eval(out.stdout.decode('utf8'))
     except Exception as e:
-        log.warn("Error ({}) retrieving jobs with command {}".format(e, ' '.join(cmd)))
+        log.warn("Error ({}) retrieving jobs with command {}".format(
+            e, ' '.join(cmd)))
         return {}
     return data
 
@@ -34,9 +41,15 @@ def get_job(job_id):
     try:
         data = literal_eval(out.stdout.decode('utf8'))
     except Exception as e:
-        log.warn("Error ({}) retrieving job detail with command {}".format(e, ' '.join(cmd)))
+        log.warn("Error ({}) retrieving job detail with command {}".format(
+            e, ' '.join(cmd)))
         return {}
     return data
+
+@lru_cache(maxsize=2)
+def get_pillar_files():
+    pillar_files = glob.glob("/srv/pillar/*.sls")
+    return pillar_files
 
 
 @lru_cache(maxsize=2)
@@ -49,12 +62,13 @@ def get_minions():
     """
     minions = dict()
     # Load salt minion
-    out = subprocess.run(['sudo', 'salt-run', 'manage.present', '--output=raw'],
-                         stdout=subprocess.PIPE)
+    cmd = ['sudo', 'salt-run', 'manage.present', '--output=raw']
+    out = subprocess.run(cmd, stdout=subprocess.PIPE)
     try:
         data = literal_eval(out.stdout.decode('utf8'))
     except Exception as e:
-        log.warn("Error ({}) retrieving minions with command {}".format(e, ' '.join(cmd)))
+        log.warn("Error ({}) retrieving minions with command {}".format(
+            e, ' '.join(cmd)))
         return {}
     minions['minions'] = data
 
@@ -69,8 +83,9 @@ def get_minions():
 
     return minions
 
+
 @lru_cache(maxsize=2)
-def get_nodegroups(nodegroups_config_files = "", ssh_nodegroups_config_files=""):
+def get_nodegroups(nodegroups_config_files="", ssh_nodegroups_config_files=""):
     """ Get list of nodegroups and matched minions (work only with minion-id pattern matching)
     output:
       nodegroups dict(): {'nodegroups': {'name': list}
@@ -79,10 +94,11 @@ def get_nodegroups(nodegroups_config_files = "", ssh_nodegroups_config_files="")
     """
     nodegroups = {'nodegroups': {},
                   'ssh_list_nodegroups': {}
-                 }
+                  }
     try:
         with open(nodegroups_config_files, "r") as f:
-            log.debug("Reading nodegroups file: {}".format(nodegroups_config_files))
+            log.debug("Reading nodegroups file: {}".format(
+                nodegroups_config_files))
             data = yaml.load(f, Loader=yaml.SafeLoader)
     except Exception as e:
         log.warning("Error ({}) during file parsing".format(e))
@@ -90,7 +106,8 @@ def get_nodegroups(nodegroups_config_files = "", ssh_nodegroups_config_files="")
     nodegroups['nodegroups'] = data.get('nodegroups', {})
     try:
         with open(ssh_nodegroups_config_files, "r") as f:
-            log.debug("Reading nodegroups file: {}".format(ssh_nodegroups_config_files))
+            log.debug("Reading nodegroups file: {}".format(
+                ssh_nodegroups_config_files))
             data = yaml.load(f, Loader=yaml.SafeLoader)
     except Exception as e:
         log.warning("Error ({}) during file parsing".format(e))
