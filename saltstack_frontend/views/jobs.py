@@ -10,7 +10,7 @@ import logging
 log = logging.getLogger(__name__)
 
 # Regexp used in frontend to show some steps as failed with a yellow "warn" background
-warn_step_regexp = re.compile(".*not_present$|^WARN")
+warn_step_regexp = re.compile(".*not_present$|^WARN|^FAIL")
 
 @view_config(route_name='jobs', renderer='../templates/jobs_list.jinja2')
 def view_jobs(request):
@@ -46,7 +46,7 @@ def view_job_details(request):
     minions_done_ok = 0
     job_id = request.matchdict['id']
     minion_id = request.params.get('minion', None)
-   
+
     # get output of salt-run jobs.list_job command
     job_data = models.salt.get_job(job_id)
 
@@ -70,19 +70,19 @@ def view_job_details(request):
             log.info("Minion {} return with error".format(minion))
             minion_job_data = [job_result]
             job_failed = True
-        
+
         # minion that received wrong commands (like states not found)
         elif isinstance(job_result['return'], list):
             log.info("Minion {} return with error".format(minion))
             minion_job_data = [job_result['return'][0]]
-            job_failed = True            
+            job_failed = True
 
         # minion with no return
         elif isinstance(job_result['return'], str):
             log.info("Minion {} return with error".format(minion))
             minion_job_data = ["No Return"]
-            job_failed = True            
-        
+            job_failed = True
+
         else:
             if isinstance(job_result['return'], dict):
                 if '_error' in job_result['return']:
@@ -94,49 +94,52 @@ def view_job_details(request):
                     # minion that give error in returning data (like utf8 encoding)
                     minion_job_data = [job_result['return']]
                     job_failed = True
-                
+
                 else:
                     num_steps = len(job_result['return'].keys())
                     # Analize step by step and mark failed and warning step
                     for step, step_data in job_result['return'].items():
                         # Alwais force a step name, not based on __id__ key, that some time is missing...
                         step_id = step.split('_|-')[1]
-                        
+
                         # Steps based on cmd.run (must evaluate retcode to find failed steps)
                         if 'retcode' in step_data['changes']:
                             if not step_data['changes']['retcode'] == 0:
                                step_data['result'] = 'failed'
-                               job_failed = True
+                               log.debug("Step marked as failed: {}".format(step_data))
                                steps_fail += 1
-                        
+
                         # Handle minion who give exception
                         elif not '__run_num__' in job_result['return'][step]:
                             step_data['result'] = 'failed'
-                            job_failed = True
+                            log.debug("Step marked as failed: {}".format(step_data))
                             job_result['return'][step]['__run_num__'] = (1000 + steps_fail)
                             steps_fail += 1
-                        
+
                         # Steps not executed (require, onfail etc...)
                         elif not 'duration' in job_result['return'][step]:
                             step_data['result'] = 'info'
-                        
-                        # Other steps who return False (Failed steps)
-                        elif step_data['result'] == False:
+
+                        # Other steps who return False (Failed steps), on the first loop
+                        # it evaluate salt-run output, but it change from False to failed to be
+                        # compatible with other check, maybe it need to be do better...
+                        elif step_data['result'] == False or step_data['result'] == 'failed':
                             step_data['result'] = 'failed'
-                            job_failed = True
                             steps_fail += 1
                         else:
-                            pass                        
+                            pass
 
                         # Steps where id match warning regex string
                         if re.match(warn_step_regexp, step_id):
                             steps_warn += 1
-                            step_data['result'] = 'warn'
                             # decrease failed count (it became only warning)
                             if step_data['result'] == 'failed':
                                 steps_fail -= 1
+                            step_data['result'] = 'warn'
 
-                        #log.info("Minion: {} step: {} failed: {}".format(minion, step.split('_|-')[1], job_failed))
+                        if steps_fail > 0:
+                            job_failed = True
+
                         minion_job_data[job_result['return'][step]['__run_num__']] = step_data
                         minion_job_data[job_result['return'][step]['__run_num__']]['step_id'] = step_id
 
@@ -150,6 +153,7 @@ def view_job_details(request):
                                       'steps_fail': steps_fail,
                                       'steps_warn': steps_warn
                                       }
+    # save jobs output as txt
     if request.params.get('output', None) == 'txt' and minion_id:
         res = render("../templates/job_details_txt.jinja2",
                      {'minion_id': minion_id,
