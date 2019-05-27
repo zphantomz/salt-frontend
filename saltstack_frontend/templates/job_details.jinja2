@@ -33,7 +33,13 @@
   <div class="col-9">
   	<div class="card">
       {% if minion_id %}
-      <div class="card-header" id="minion-details"><i class="cui-justify-center"></i>{{ minion_id }}</div>
+      <div class="card-header" id="minion-details">{{ minion_id }}
+        <div class="card-header-actions">
+          <a class="card-header-action" href={{ request.url + "&output=txt" }}>
+          <i class="cui-arrow-bottom"></i>
+          </a>
+        </div>
+      </div>
       <ul class="list-group">
         {# Change background on different status result #}
         {%- for step in minions_job_result[minion_id]['data']|sort %}
