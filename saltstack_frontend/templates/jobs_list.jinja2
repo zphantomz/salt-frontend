@@ -24,7 +24,7 @@
             <th>Argument</th>
           </thead>
           <tbody>
-            {% for jid, job_data in jobs.items() %}  
+            {% for jid, job_data in jobs.items() if job_data.Target %}  
             <tr>
               <td data-order={{ jid }} style="white-space: nowrap;">{{ job_data.StartTime[:-7] }}</td>
               {%- if job_data.Target is string %}

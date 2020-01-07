@@ -136,7 +136,6 @@ def view_job_details(request):
                             if step_data['result'] == 'failed':
                                 steps_fail -= 1
                             step_data['result'] = 'warn'
-
                         if steps_fail > 0:
                             job_failed = True
 

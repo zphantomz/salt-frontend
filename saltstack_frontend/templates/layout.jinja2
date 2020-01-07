@@ -12,8 +12,10 @@
 
     <!-- CoreUi core CSS -->
     <link rel="stylesheet" href="https://unpkg.com/@coreui/coreui/dist/css/coreui.min.css">
+
     <!-- CoreUi Icons -->
-    <link rel="stylesheet" href="https://unpkg.com/@coreui/icons/css/coreui-icons.min.css">
+    <!-- <link rel="stylesheet" href="https://unpkg.com/@coreui/icons/css/all.min.css"> -->
+    <link rel="stylesheet" href="{{request.static_url('saltstack_frontend:static/css/coreui-icons.all.css')}}">
     {% block css %}
     {% endblock css %}
     <!-- Custom styles for this scaffold -->
@@ -37,28 +39,28 @@
           <li class="nav-title">Settings</li>
           <li class="nav-item">
             <a class="nav-link" href="/minions">
-              <i class="nav-icon cui-laptop"></i>Minions
+              <i class="nav-icon cil-laptop"></i>Minions
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/pillars">
-              <i class="nav-icon cui-laptop"></i>Pillars
+              <i class="nav-icon cil-laptop"></i>Pillars
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/states/show">
-              <i class="nav-icon cui-laptop"></i>States
+              <i class="nav-icon cil-laptop"></i>States
             </a>
           </li>
           <li class="nav-title">Utility</li>
           <li class="nav-item">
             <a class="nav-link" href="/states/apply">
-              <i class="nav-icon cui-laptop"></i>Apply States
+              <i class="nav-icon cil-laptop"></i>Apply States
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/jobs">
-              <i class="nav-icon cui-speedometer"></i>Jobs
+              <i class="nav-icon cil-speedometer"></i>Jobs
             </a>
           </li>
         </ul>
